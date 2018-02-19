@@ -166,7 +166,7 @@ class Model:
 
 def main():
   # Import data
-  db = load_stock_data("data/aapl/")
+  db = load_stock_data("..//input/bitcoin-historical-data")
 
   # Construct graph
   image = tf.placeholder(tf.float32, [None, 128, 5])

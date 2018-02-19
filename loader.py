@@ -85,12 +85,15 @@ class DataSet(object):
       labels_new = self._labels[start:end]
       return np.concatenate((images_left, images_new), axis=0), np.concatenate((labels_left, labels_new), axis=0)
 
-def load_csv(fname, col_start=2, row_start=0, delimiter=",", dtype=dtypes.float32):
+def load_csv(fname, col_start=1, row_start=1, delimiter=",", dtype=dtypes.float32):
   data = np.genfromtxt(fname, delimiter=delimiter)
   for _ in range(col_start):
     data = np.delete(data, (0), axis=1)
   for _ in range(row_start):
     data = np.delete(data, (0), axis=0)
+  data = data[:,:5]
+  data = data[4000:10000]
+  print('data.shape ', data.shape)
   # print(np.transpose(data))
   return data
 
@@ -109,7 +112,7 @@ def load_stock_data(path, moving_window=128, columns=5, train_test_ratio=4.0):
         lbl = [[0.0, 1.0]]
       label_set = np.concatenate((label_set, lbl), axis=0)
       # label_set = np.concatenate((label_set, np.array([data[idx+(moving_window+5),3] - data[idx+(moving_window),3]])))
-    # print(stock_set.shape, label_set.shape)
+    print(stock_set.shape, label_set.shape)
     return stock_set, label_set
 
   # read a directory of data
