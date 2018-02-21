@@ -80,11 +80,11 @@ class Model:
 
       # conv_2 - conv_6
       layer_specs = [
-        (self.filter_num * 2, self.dropout),  # conv_2: [batch, 64, ngf] => [batch, 32, ngf * 2]
-        (self.filter_num * 4, self.dropout),  # conv_3: [batch, 32, ngf * 2] => [batch, 16, ngf * 4]
-        (self.filter_num * 8, self.dropout),  # conv_4: [batch, 16, ngf * 4] => [batch, 8, ngf * 8]
-        (self.filter_num * 8, self.dropout),  # conv_5: [batch, 8, ngf * 8] => [batch, 4, ngf * 8]
-        (self.filter_num * 8, self.dropout)  # conv_6: [batch, 4, ngf * 8] => [batch, 2, ngf * 8]
+        (self.filter_num * 2, 0.2),  # conv_2: [batch, 64, ngf] => [batch, 32, ngf * 2]
+        (self.filter_num * 4, 0.2),  # conv_3: [batch, 32, ngf * 2] => [batch, 16, ngf * 4]
+        (self.filter_num * 8, 0.2),  # conv_4: [batch, 16, ngf * 4] => [batch, 8, ngf * 8]
+        (self.filter_num * 8, 0.2),  # conv_5: [batch, 8, ngf * 8] => [batch, 4, ngf * 8]
+        (self.filter_num * 8, 0.2)  # conv_6: [batch, 4, ngf * 8] => [batch, 2, ngf * 8]
       ]
 
       # adding layers
