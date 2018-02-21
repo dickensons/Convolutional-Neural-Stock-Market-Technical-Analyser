@@ -42,7 +42,7 @@ class Model:
   def __init__(self,
     image,
     label,
-    dropout=0.5,
+    dropout=0.2,
     conv_size=9,
     conv_stride=1,
     ksize=2,
@@ -80,11 +80,11 @@ class Model:
 
       # conv_2 - conv_6
       layer_specs = [
-        (self.filter_num * 2, 0.5),  # conv_2: [batch, 64, ngf] => [batch, 32, ngf * 2]
-        (self.filter_num * 4, 0.5),  # conv_3: [batch, 32, ngf * 2] => [batch, 16, ngf * 4]
-        (self.filter_num * 8, 0.5),  # conv_4: [batch, 16, ngf * 4] => [batch, 8, ngf * 8]
-        (self.filter_num * 8, 0.5),  # conv_5: [batch, 8, ngf * 8] => [batch, 4, ngf * 8]
-        (self.filter_num * 8, 0.5)  # conv_6: [batch, 4, ngf * 8] => [batch, 2, ngf * 8]
+        (self.filter_num * 2, self.dropout),  # conv_2: [batch, 64, ngf] => [batch, 32, ngf * 2]
+        (self.filter_num * 4, self.dropout),  # conv_3: [batch, 32, ngf * 2] => [batch, 16, ngf * 4]
+        (self.filter_num * 8, self.dropout),  # conv_4: [batch, 16, ngf * 4] => [batch, 8, ngf * 8]
+        (self.filter_num * 8, self.dropout),  # conv_5: [batch, 8, ngf * 8] => [batch, 4, ngf * 8]
+        (self.filter_num * 8, self.dropout)  # conv_6: [batch, 4, ngf * 8] => [batch, 2, ngf * 8]
       ]
 
       # adding layers
@@ -187,8 +187,10 @@ def main():
       if i % 100 == 0:
         images_eval, labels_eval = db.test.next_batch(1000)
         accuracy = sess.run(model.accuracy, {image: images_eval, label: labels_eval, dropout: 1.0})
-        print('step %d, accuracy %g' % (i, accuracy))
-      sess.run(model.optimize, {image: images, label: labels, dropout: 0.5})
+        print('step %d, test accuracy %g' % (i, accuracy))
+        train_accuracy = sess.run(model.accuracy, {image: images, label: labels, dropout: 1.0})
+        print('step %d, train accuracy %g' % (i, train_accuracy))
+      sess.run(model.optimize, {image: images, label: labels, dropout: 0.2})
 
       if i % 10000 == 0:
         save_path = 'checkpoints/'

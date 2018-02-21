@@ -91,7 +91,9 @@ def load_csv(fname, col_start=1, row_start=1, delimiter=",", dtype=dtypes.float3
     data = np.delete(data, (0), axis=1)
   for _ in range(row_start):
     data = np.delete(data, (0), axis=0)
+  # remove two unnecessary columns
   data = data[:,:5]
+  # use less data for test
   data = data[4000:10000]
   print('data.shape ', data.shape)
   # print(np.transpose(data))
@@ -106,7 +108,10 @@ def load_stock_data(path, moving_window=128, columns=5, train_test_ratio=4.0):
     for idx in range(data.shape[0] - (moving_window + 5)):
       stock_set = np.concatenate((stock_set, np.expand_dims(data[range(idx,idx+(moving_window)),:], axis=0)), axis=0)
 
-      if data[idx+(moving_window+5),3] > data[idx+(moving_window),3]:
+      #if data[idx+(moving_window+5),3] > data[idx+(moving_window),3]:
+      # true if the price will rise at least 0.1 %
+      average_price_in_5_min = np.average(data[range((idx + (moving_window)),((idx + (moving_window + 5)))),3])
+      if average_price_in_5_min > (data[idx + (moving_window), 3]*1.001):
         lbl = [[1.0, 0.0]]
       else:
         lbl = [[0.0, 1.0]]
