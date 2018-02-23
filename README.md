@@ -1,3 +1,5 @@
+Link to original hub: https://github.com/philipxjm/Convolutional-Neural-Stock-Market-Technical-Analyser
+
 # Neural Stock Market Prediction
 Uses Deep Convolutional Neural Networks (CNNs) to model the stock market using technical analysis. Predicts the future trend of stock selections.
 

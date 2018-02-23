@@ -7,6 +7,7 @@ import functools
 from ops import *
 from loader import *
 
+
 def doublewrap(function):
   @functools.wraps(function)
   def decorator(*args, **kwargs):
@@ -75,7 +76,7 @@ class Model:
 
       # conv_1 [batch, ngf, 5] => [batch, 64, ngf]
       with tf.variable_scope("conv_1"):
-        output = relu(conv1d(input_image, self.filter_num, name='conv_1'))
+        output = relu(conv2d(input_image, self.filter_num, name='conv_1'))
         layers.append(output)
 
       # conv_2 - conv_6
@@ -93,7 +94,7 @@ class Model:
           rectified = lrelu(layers[-1], 0.2)
 
           # [batch, in_width, in_channels] => [batch, in_width/2, out_channels]
-          convolved = conv1d(rectified, out_channels)
+          convolved = conv2d(rectified, out_channels)
 
           # batchnormalize convolved
           output = batchnorm(convolved, is_2d=False)
@@ -124,6 +125,7 @@ class Model:
   @define_scope
   def accuracy(self):
     correct_prediction = tf.equal(tf.argmax(self.label, 1), tf.argmax(self.prediction, 1))
+    #TODO: How correct_prediction looks like?
     return tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
   # @define_scope
@@ -169,7 +171,7 @@ def main():
   db = load_stock_data("..//input/bitcoin-historical-data")
 
   # Construct graph
-  image = tf.placeholder(tf.float32, [None, 128, 5])
+  image = tf.placeholder(tf.float32, [None, 2, 128, 5])
   label = tf.placeholder(tf.float32, [None, 2])
   dropout = tf.placeholder(tf.float32)
   model = Model(image, label, dropout=dropout)
@@ -183,9 +185,9 @@ def main():
   with tf.Session(config=config) as sess:
     sess.run(tf.global_variables_initializer())
     for i in range(500000):
-      images, labels = db.train.next_batch(10)
+      images, labels = db.train.next_batch(100)
       if i % 100 == 0:
-        images_eval, labels_eval = db.test.next_batch(1000)
+        images_eval, labels_eval = db.test.next_batch(100)
         accuracy = sess.run(model.accuracy, {image: images_eval, label: labels_eval, dropout: 1.0})
         print('step %d, test accuracy %g' % (i, accuracy))
         train_accuracy = sess.run(model.accuracy, {image: images, label: labels, dropout: 1.0})

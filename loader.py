@@ -8,6 +8,9 @@ import pandas as pd
 import functools as ft
 import csv
 import os
+import re
+
+
 np.set_printoptions(threshold=np.nan)
 
 class DataSet(object):
@@ -94,64 +97,53 @@ def load_csv(fname, col_start=1, row_start=1, delimiter=",", dtype=dtypes.float3
   # remove two unnecessary columns
   data = data[:,:5]
   # use less data for test
-  data = data[4000:10000]
+  data = data[1000:5000]
   print('data.shape ', data.shape)
   # print(np.transpose(data))
   return data
 
+# Helper to order files
+numbers = re.compile(r'(\d+)')
+def numericalSort(value):
+    parts = numbers.split(value)
+    parts[1::2] = map(int, parts[1::2])
+    return parts
+
 # stock data loading
 def load_stock_data(path, moving_window=128, columns=5, train_test_ratio=4.0):
   # process a single file's data into usable arrays
-  def process_data(data):
-    stock_set = np.zeros([0,moving_window,columns])
-    label_set = np.zeros([0,2])
-    for idx in range(data.shape[0] - (moving_window + 5)):
-      stock_set = np.concatenate((stock_set, np.expand_dims(data[range(idx,idx+(moving_window)),:], axis=0)), axis=0)
-
-      #if data[idx+(moving_window+5),3] > data[idx+(moving_window),3]:
-      # true if the price will rise at least 0.1 %
-      average_price_in_5_min = np.average(data[range((idx + (moving_window)),((idx + (moving_window + 5)))),3])
-      if average_price_in_5_min > (data[idx + (moving_window), 3]*1.001):
-        lbl = [[1.0, 0.0]]
-      else:
-        lbl = [[0.0, 1.0]]
-      label_set = np.concatenate((label_set, lbl), axis=0)
-      # label_set = np.concatenate((label_set, np.array([data[idx+(moving_window+5),3] - data[idx+(moving_window),3]])))
-    print(stock_set.shape, label_set.shape)
-    return stock_set, label_set
+  # def process_data(data):
+  #   stock_set = np.zeros([0,2,moving_window,columns])
+  #   label_set = np.zeros([0,2])
+  #   # start from 1152 because we need to add 128 prices for each 10 minutes in the past
+  #   for idx in range(1152,data.shape[0] - (moving_window + 5)):
+  #     min_data   = data[range(idx,idx+(moving_window)),:]
+  #     e10_min_data = data[range((idx+moving_window)-(moving_window*10),idx+(moving_window),10)]
+  #     temp = []
+  #     temp.append(min_data)
+  #     temp.append(e10_min_data)
+  #     stock_set = np.concatenate((stock_set, np.expand_dims(temp, axis=0)), axis=0)
+  #     if idx % 500 == 0:
+  #       print("index: " , idx)
+  #     #if data[idx+(moving_window+5),3] > data[idx+(moving_window),3]:
+  #     # true if the price will rise at least 0.1 %
+  #     average_price_in_5_min = np.average(data[range((idx + (moving_window)),((idx + (moving_window + 5)))),3])
+  #     if average_price_in_5_min > (data[idx + (moving_window), 3]*1.00001):
+  #       lbl = [[1.0, 0.0]]
+  #     else:
+  #       lbl = [[0.0, 1.0]]
+  #     label_set = np.concatenate((label_set, lbl), axis=0)
+  #     # label_set = np.concatenate((label_set, np.array([data[idx+(moving_window+5),3] - data[idx+(moving_window),3]])))
+  #   print(stock_set.shape, label_set.shape)
+  #   return stock_set, label_set
 
   # read a directory of data
-  stocks_set = np.zeros([0,moving_window,columns])
-  labels_set = np.zeros([0,2])
-  for dir_item in os.listdir(path):
-    dir_item_path = os.path.join(path, dir_item)
-    if os.path.isfile(dir_item_path):
-      print(dir_item_path)
-      ss, ls = process_data(load_csv(dir_item_path))
-      stocks_set = np.concatenate((stocks_set, ss), axis=0)
-      labels_set = np.concatenate((labels_set, ls), axis=0)
 
-  # shuffling the data
-  perm = np.arange(labels_set.shape[0])
-  np.random.shuffle(perm)
-  stocks_set = stocks_set[perm]
-  labels_set = labels_set[perm]
+  train_stocks = np.load("input/train_stocks.npy")
+  train_labels = np.load("input/train_labels.npy")
 
-  # normalize the data
-  stocks_set_ = np.zeros(stocks_set.shape)
-  for i in range(len(stocks_set)):
-    min = stocks_set[i].min(axis=0)
-    max = stocks_set[i].max(axis=0)
-    stocks_set_[i] = (stocks_set[i] - min) / (max - min)
-  stocks_set = stocks_set_
-  # labels_set = np.transpose(labels_set)
-
-  # selecting 1/5 for testing, and 4/5 for training
-  train_test_idx = int((1.0 / (train_test_ratio + 1.0)) * labels_set.shape[0])
-  train_stocks = stocks_set[train_test_idx:,:,:]
-  train_labels = labels_set[train_test_idx:]
-  test_stocks = stocks_set[:train_test_idx,:,:]
-  test_labels = labels_set[:train_test_idx]
+  test_stocks = np.load("input/test_stocks.npy")
+  test_labels = np.load("input/test_labels.npy")
 
   train = DataSet(train_stocks, train_labels)
   test = DataSet(test_stocks, test_labels)
