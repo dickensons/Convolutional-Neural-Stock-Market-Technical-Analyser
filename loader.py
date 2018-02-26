@@ -139,11 +139,11 @@ def load_stock_data(path, moving_window=128, columns=5, train_test_ratio=4.0):
 
   # read a directory of data
 
-  train_stocks = np.load("input/train_stocks.npy")
-  train_labels = np.load("input/train_labels.npy")
+  train_stocks = np.load("input/train_stocks_debug.npy")
+  train_labels = np.load("input/train_labels_debug.npy")
 
-  test_stocks = np.load("input/test_stocks.npy")
-  test_labels = np.load("input/test_labels.npy")
+  test_stocks = np.load("input/test_stocks_debug.npy")
+  test_labels = np.load("input/test_labels_debug.npy")
 
   train = DataSet(train_stocks, train_labels)
   test = DataSet(test_stocks, test_labels)

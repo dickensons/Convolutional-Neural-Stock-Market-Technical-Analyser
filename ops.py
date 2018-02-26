@@ -16,6 +16,18 @@ except:
   merge_summary = tf.summary.merge
   SummaryWriter = tf.summary.FileWriter
 
+def variable_summaries(var):
+  """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
+  with tf.name_scope('summaries'):
+    mean = tf.reduce_mean(var)
+    tf.summary.scalar('mean', mean)
+    with tf.name_scope('stddev'):
+      stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
+    tf.summary.scalar('stddev', stddev)
+    tf.summary.scalar('max', tf.reduce_max(var))
+    tf.summary.scalar('min', tf.reduce_min(var))
+    tf.summary.histogram('histogram', var)
+
 def conv1d(input, output_dim,
            conv_w=9, conv_s=2,
            padding="SAME", name="conv1d",
@@ -24,7 +36,7 @@ def conv1d(input, output_dim,
     w = tf.get_variable('w', [conv_w, input.get_shape().as_list()[-1], output_dim],
       initializer=tf.truncated_normal_initializer(stddev=stddev))
     c = tf.nn.conv1d(input, w, conv_s, padding=padding)
-
+    variable_summaries(w)
     if bias:
       b = tf.get_variable('b', [output_dim], initializer=tf.constant_initializer(0.0))
       return c + b
@@ -32,14 +44,14 @@ def conv1d(input, output_dim,
     return c
 
 def conv2d(input, output_dim,
-           conv_h=5, conv_w=5, conv_s=1,
+           conv_h=2, conv_w=9, conv_s=1,
            padding="SAME", name="conv2d",
            stddev=0.02, bias=True):
   with tf.variable_scope(name):
     w = tf.get_variable('w', [conv_h, conv_w, input.get_shape().as_list()[-1], output_dim],
       initializer=tf.truncated_normal_initializer(stddev=stddev))
     c = tf.nn.conv2d(input, w, strides=[1, conv_s, conv_s, 1], padding=padding)
-
+    variable_summaries(w)
     if bias:
       b = tf.get_variable('b', [output_dim], initializer=tf.constant_initializer(0.0))
       return c + b
